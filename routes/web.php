@@ -4,15 +4,10 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+    return Inertia::render('Products/ProductList');
+})->name('products');
+
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -30,4 +25,11 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('Products/ProductList');
     })->name('products');
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cart', function () {
+        return Inertia::render('Cart/Cart');
+    })->name('cart');
+});
+
 require __DIR__.'/auth.php';
