@@ -3,6 +3,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Http\Controllers\CartController;
 
 // Route to get all products
 Route::get('/products', function () {
@@ -34,4 +35,15 @@ Route::middleware('auth:sanctum')->post('/cart/add', function (Request $request)
     }
 
     return response()->json(['message' => 'Product added to cart']);
+});
+
+
+Route::middleware(['web'])->group(function () {
+    Route::get('/products', [ProductController::class, 'index']);
+    
+    Route::get('/cart', [CartController::class, 'get']);
+    Route::post('/cart/add', [CartController::class, 'add']);
+    Route::post('/cart/remove', [CartController::class, 'remove']);
+    Route::post('/cart/clear', [CartController::class, 'clear']);
+    Route::post('/cart/update', [CartController::class, 'update']);
 });

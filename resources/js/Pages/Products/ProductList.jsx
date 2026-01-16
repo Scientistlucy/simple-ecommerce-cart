@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Header from '@/Components/Header';
+import { useCart } from '@/Contexts/CartContext';
 
 export default function ProductList() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [addingToCart, setAddingToCart] = useState({});
+
+    // Use cart context
+    const { addToCart: addToCartContext } = useCart();
 
     useEffect(() => {
         // Fetch products from backend
@@ -20,14 +24,13 @@ export default function ProductList() {
             });
     }, []);
 
-    const addToCart = (productId) => {
+    const addToCart = async (productId) => {
         setAddingToCart(prev => ({ ...prev, [productId]: true }));
 
-        axios.post('/api/cart/add', {
-            product_id: productId,
-            quantity: 1,
-        })
-        .then(response => {
+        // Use context method
+        const result = await addToCartContext(productId, 1);
+
+        if (result.success) {
             // Success feedback
             const productElement = document.getElementById(`product-${productId}`);
             if (productElement) {
@@ -36,13 +39,11 @@ export default function ProductList() {
                     productElement.classList.remove('ring-2', 'ring-green-400');
                 }, 1000);
             }
-            setAddingToCart(prev => ({ ...prev, [productId]: false }));
-        })
-        .catch(error => {
-            console.log(error);
+        } else {
             alert("Error adding to cart");
-            setAddingToCart(prev => ({ ...prev, [productId]: false }));
-        });
+        }
+
+        setAddingToCart(prev => ({ ...prev, [productId]: false }));
     };
 
     const getStockDisplay = (stock) => {
@@ -52,6 +53,7 @@ export default function ProductList() {
     };
 
     // Sample products for demonstration
+  // Sample products for demonstration
     const sampleProducts = [
         {
             id: 1,
@@ -253,8 +255,8 @@ export default function ProductList() {
         }
     ];
 
-    // Use sample products if no products from API
-   const displayProducts = sampleProducts
+
+    const displayProducts = sampleProducts;
 
     if (loading) {
         return (
@@ -274,17 +276,17 @@ export default function ProductList() {
         <>
             <Header />
             
-         {/* Hero Section */}
-<div className="bg-blue-600 text-white py-16 px-6">
-    <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            Shop The Latest Collection
-        </h1>
-        <p className="text-lg md:text-xl text-blue-100 max-w-2xl">
-            Discover amazing deals on fashion, furniture, footwear, and home decor
-        </p>
-    </div>
-</div>
+            {/* Hero Section */}
+            <div className="bg-blue-600 text-white py-16 px-6">
+                <div className="max-w-7xl mx-auto">
+                    <h1 className="text-4xl md:text-6xl font-bold mb-4">
+                        Shop The Latest Collection
+                    </h1>
+                    <p className="text-lg md:text-xl text-blue-100 max-w-2xl">
+                        Discover amazing deals on fashion, furniture, footwear, and home decor
+                    </p>
+                </div>
+            </div>
 
             {/* Main Content */}
             <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -353,7 +355,7 @@ export default function ProductList() {
                                             )}
                                         </div>
 
-                                        {/* Stock Status - Only show if low or out */}
+                                        {/* Stock Status */}
                                         {stockDisplay.show && (
                                             <div className="mb-4">
                                                 <span className={`text-xs font-bold ${stockDisplay.color} bg-opacity-10 px-2 py-1 rounded`}>
@@ -362,37 +364,37 @@ export default function ProductList() {
                                             </div>
                                         )}
 
-                                     {/* Add to Cart Button */}
-<button
-    onClick={() => addToCart(product.id)}
-    disabled={addingToCart[product.id] || isOutOfStock}
-    className={`w-full py-3 px-4 rounded-xl font-bold transition-all duration-200 flex items-center justify-center space-x-2 text-sm ${
-        isOutOfStock
-            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            : addingToCart[product.id]
-            ? 'bg-blue-400 text-white cursor-wait'
-            : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-md hover:shadow-xl'
-    }`}
->
-    {addingToCart[product.id] ? (
-        <>
-            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Adding...</span>
-        </>
-    ) : isOutOfStock ? (
-        <span>Unavailable</span>
-    ) : (
-        <>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span>Add to Cart</span>
-        </>
-    )}
-</button>
+                                        {/* Add to Cart Button */}
+                                        <button
+                                            onClick={() => addToCart(product.id)}
+                                            disabled={addingToCart[product.id] || isOutOfStock}
+                                            className={`w-full py-3 px-4 rounded-xl font-bold transition-all duration-200 flex items-center justify-center space-x-2 text-sm ${
+                                                isOutOfStock
+                                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                    : addingToCart[product.id]
+                                                    ? 'bg-blue-400 text-white cursor-wait'
+                                                    : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-md hover:shadow-xl'
+                                            }`}
+                                        >
+                                            {addingToCart[product.id] ? (
+                                                <>
+                                                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    <span>Adding...</span>
+                                                </>
+                                            ) : isOutOfStock ? (
+                                                <span>Unavailable</span>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    </svg>
+                                                    <span>Add to Cart</span>
+                                                </>
+                                            )}
+                                        </button>
                                     </div>
                                 </div>
                             );
