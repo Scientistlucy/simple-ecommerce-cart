@@ -1,16 +1,16 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ProductController;
 
-// Route to get all products
-Route::get('/products', function () {
-    return Product::all();
-});
+// Product routes
+Route::get('/products', [ProductController::class, 'index']);
 
-// Route to add product to cart (your existing code)
+// Cart routes (with authentication)
 Route::middleware('auth:sanctum')->post('/cart/add', function (Request $request) {
     $request->validate([
         'product_id' => 'required|exists:products,id',
@@ -18,7 +18,6 @@ Route::middleware('auth:sanctum')->post('/cart/add', function (Request $request)
     ]);
 
     $user = $request->user();
-
     $cartItem = CartItem::where('user_id', $user->id)
         ->where('product_id', $request->product_id)
         ->first();
@@ -37,10 +36,8 @@ Route::middleware('auth:sanctum')->post('/cart/add', function (Request $request)
     return response()->json(['message' => 'Product added to cart']);
 });
 
-
+// Cart routes with web middleware
 Route::middleware(['web'])->group(function () {
-    Route::get('/products', [ProductController::class, 'index']);
-    
     Route::get('/cart', [CartController::class, 'get']);
     Route::post('/cart/add', [CartController::class, 'add']);
     Route::post('/cart/remove', [CartController::class, 'remove']);

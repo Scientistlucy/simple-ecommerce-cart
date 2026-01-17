@@ -114,5 +114,14 @@ return [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
-
+ /*
+    |--------------------------------------------------------------------------
+    | Admin Email Address
+    |--------------------------------------------------------------------------
+    |
+    | This email address will receive administrative notifications such as
+    | low stock alerts and other important system notifications.
+    |
+    */
+    'admin_email' => env('ADMIN_EMAIL', 'admin@example.com'),
 ];

@@ -1,21 +1,33 @@
 <?php
 
 namespace App\Models;
-use App\Models\User;    // <-- add this
-use App\Models\Product; // <-- add this
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CartItem extends Model
+class OrderItem extends Model
 {
- public function user()
-{
-    return $this->belongsTo(User::class);
-}
+    use HasFactory;
 
-public function product()
-{
-    return $this->belongsTo(Product::class);
-}
-   //
+    protected $fillable = [
+        'order_id',
+        'product_id',
+        'quantity',
+        'price'
+    ];
+
+    protected $casts = [
+        'quantity' => 'integer',
+        'price' => 'float'
+    ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

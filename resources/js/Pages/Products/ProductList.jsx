@@ -2,11 +2,42 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Header from '@/Components/Header';
 import { useCart } from '@/Contexts/CartContext';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+
+// Toast Notification Component
+const Toast = ({ message, onClose }) => {
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            onClose();
+        }, 3000);
+
+        return () => clearTimeout(timer);
+    }, [onClose]);
+
+    return (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+            <div className="bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px]">
+                <div className="flex-shrink-0">
+                    <CheckCircleIcon className="w-6 h-6" />
+                </div>
+                <p className="font-medium flex-1">{message}</p>
+                <button 
+                    onClick={onClose}
+                    className="flex-shrink-0 hover:bg-green-700 rounded-full p-1 transition-colors"
+                >
+                    <XMarkIcon className="w-5 h-5" />
+                </button>
+            </div>
+        </div>
+    );
+};
 
 export default function ProductList() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [addingToCart, setAddingToCart] = useState({});
+    const [toast, setToast] = useState(null);
 
     // Use cart context
     const { addToCart: addToCartContext } = useCart();
@@ -19,10 +50,14 @@ export default function ProductList() {
                 setLoading(false);
             })
             .catch(error => {
-                console.log(error);
+                console.error('Error fetching products:', error);
                 setLoading(false);
             });
     }, []);
+
+    const showToast = (message) => {
+        setToast(message);
+    };
 
     const addToCart = async (productId) => {
         setAddingToCart(prev => ({ ...prev, [productId]: true }));
@@ -31,14 +66,11 @@ export default function ProductList() {
         const result = await addToCartContext(productId, 1);
 
         if (result.success) {
-            // Success feedback
-            const productElement = document.getElementById(`product-${productId}`);
-            if (productElement) {
-                productElement.classList.add('ring-2', 'ring-green-400');
-                setTimeout(() => {
-                    productElement.classList.remove('ring-2', 'ring-green-400');
-                }, 1000);
-            }
+            // Find the product name from the fetched products
+            const product = products.find(p => p.id === productId);
+            
+            // Show success toast
+            showToast(`${product.name} added to cart successfully!`);
         } else {
             alert("Error adding to cart");
         }
@@ -51,212 +83,6 @@ export default function ProductList() {
         if (stock <= 5) return { text: `Only ${stock} left`, color: 'text-orange-600', show: true };
         return { text: '', color: '', show: false };
     };
-
-    // Sample products for demonstration
-  // Sample products for demonstration
-    const sampleProducts = [
-        {
-            id: 1,
-            name: "Nike Air Max 270 Running Shoes",
-            price: 149.99,
-            original_price: 189.99,
-            stock_quantity: 3,
-            image_url: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop",
-            category: "Shoes"
-        },
-        {
-            id: 2,
-            name: "Modern Ergonomic Office Chair",
-            price: 299.99,
-            stock_quantity: 12,
-            image_url: "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=500&h=500&fit=crop",
-            category: "Furniture"
-        },
-        {
-            id: 3,
-            name: "Elegant Summer Floral Dress",
-            price: 79.99,
-            original_price: 99.99,
-            stock_quantity: 2,
-            image_url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&h=500&fit=crop",
-            category: "Fashion"
-        },
-        {
-            id: 4,
-            name: "Minimalist Table Lamp",
-            price: 45.99,
-            stock_quantity: 8,
-            image_url: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=500&h=500&fit=crop",
-            category: "Home Decor"
-        },
-        {
-            id: 5,
-            name: "Adidas Ultraboost Sneakers",
-            price: 179.99,
-            stock_quantity: 0,
-            image_url: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=500&h=500&fit=crop",
-            category: "Shoes"
-        },
-        {
-            id: 6,
-            name: "Scandinavian Dining Chair Set",
-            price: 399.99,
-            stock_quantity: 5,
-            image_url: "https://images.unsplash.com/photo-1503602642458-232111445657?w=500&h=500&fit=crop",
-            category: "Furniture"
-        },
-        {
-            id: 7,
-            name: "Classic Black Evening Dress",
-            price: 129.99,
-            stock_quantity: 15,
-            image_url: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=500&h=500&fit=crop",
-            category: "Fashion"
-        },
-        {
-            id: 8,
-            name: "Ceramic Vase Set - 3 Piece",
-            price: 34.99,
-            stock_quantity: 1,
-            image_url: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=500&h=500&fit=crop",
-            category: "Home Decor"
-        },
-        {
-            id: 9,
-            name: "Puma RS-X Trainers",
-            price: 119.99,
-            original_price: 140.00,
-            stock_quantity: 20,
-            image_url: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=500&h=500&fit=crop",
-            category: "Shoes"
-        },
-        {
-            id: 10,
-            name: "Velvet Accent Armchair",
-            price: 549.99,
-            stock_quantity: 4,
-            image_url: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&h=500&fit=crop",
-            category: "Furniture"
-        },
-        {
-            id: 11,
-            name: "Bohemian Maxi Dress",
-            price: 89.99,
-            stock_quantity: 7,
-            image_url: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&h=500&fit=crop",
-            category: "Fashion"
-        },
-        {
-            id: 12,
-            name: "Modern Wall Art Canvas Set",
-            price: 79.99,
-            stock_quantity: 3,
-            image_url: "https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=500&h=500&fit=crop",
-            category: "Home Decor"
-        },
-        {
-            id: 13,
-            name: "Converse Chuck Taylor All Star",
-            price: 65.99,
-            stock_quantity: 25,
-            image_url: "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?w=500&h=500&fit=crop",
-            category: "Shoes"
-        },
-        {
-            id: 14,
-            name: "L-Shaped Gaming Desk",
-            price: 279.99,
-            original_price: 349.99,
-            stock_quantity: 2,
-            image_url: "https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=500&h=500&fit=crop",
-            category: "Furniture"
-        },
-        {
-            id: 15,
-            name: "Casual Denim Shirt Dress",
-            price: 59.99,
-            stock_quantity: 11,
-            image_url: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?w=500&h=500&fit=crop",
-            category: "Fashion"
-        },
-        {
-            id: 16,
-            name: "Decorative Throw Pillow Set",
-            price: 39.99,
-            stock_quantity: 0,
-            image_url: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=500&h=500&fit=crop",
-            category: "Home Decor"
-        },
-        {
-            id: 17,
-            name: "New Balance 574 Classic",
-            price: 84.99,
-            stock_quantity: 18,
-            image_url: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=500&h=500&fit=crop",
-            category: "Shoes"
-        },
-        {
-            id: 18,
-            name: "Reclining Leather Sofa",
-            price: 1299.99,
-            stock_quantity: 3,
-            image_url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&h=500&fit=crop",
-            category: "Furniture"
-        },
-        {
-            id: 19,
-            name: "Knitted Sweater Dress",
-            price: 69.99,
-            original_price: 89.99,
-            stock_quantity: 5,
-            image_url: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500&h=500&fit=crop",
-            category: "Fashion"
-        },
-        {
-            id: 20,
-            name: "Wooden Coffee Table",
-            price: 189.99,
-            stock_quantity: 6,
-            image_url: "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=500&h=500&fit=crop",
-            category: "Furniture"
-        },
-        {
-            id: 21,
-            name: "Moroccan Area Rug 5x7",
-            price: 159.99,
-            stock_quantity: 4,
-            image_url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=500&h=500&fit=crop",
-            category: "Home Decor"
-        },
-        {
-            id: 22,
-            name: "Vans Old Skool Sneakers",
-            price: 69.99,
-            stock_quantity: 1,
-            image_url: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=500&h=500&fit=crop",
-            category: "Shoes"
-        },
-        {
-            id: 23,
-            name: "Wrap Midi Dress - Floral Print",
-            price: 94.99,
-            stock_quantity: 9,
-            image_url: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=500&h=500&fit=crop",
-            category: "Fashion"
-        },
-        {
-            id: 24,
-            name: "Metal Floor Lamp - Industrial",
-            price: 119.99,
-            original_price: 149.99,
-            stock_quantity: 12,
-            image_url: "https://images.unsplash.com/photo-1550603302-d8cf8bde1f6d?w=500&h=500&fit=crop",
-            category: "Home Decor"
-        }
-    ];
-
-
-    const displayProducts = sampleProducts;
 
     if (loading) {
         return (
@@ -275,6 +101,14 @@ export default function ProductList() {
     return (
         <>
             <Header />
+            
+            {/* Toast Notification */}
+            {toast && (
+                <Toast 
+                    message={toast} 
+                    onClose={() => setToast(null)} 
+                />
+            )}
             
             {/* Hero Section */}
             <div className="bg-blue-600 text-white py-16 px-6">
@@ -295,13 +129,13 @@ export default function ProductList() {
                     {/* Products Count */}
                     <div className="mb-8 flex items-center justify-between">
                         <p className="text-gray-700 text-lg">
-                            <span className="font-bold text-gray-900">{displayProducts.length}</span> Products Available
+                            <span className="font-bold text-gray-900">{products.length}</span> Products Available
                         </p>
                     </div>
 
                     {/* Product Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                        {displayProducts.map(product => {
+                        {products.map(product => {
                             const stockDisplay = getStockDisplay(product.stock_quantity);
                             const isOutOfStock = product.stock_quantity === 0;
                             
@@ -319,13 +153,6 @@ export default function ProductList() {
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                         />
                                         
-                                        {/* Sale Badge */}
-                                        {product.original_price && product.original_price > product.price && (
-                                            <span className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                                                SALE
-                                            </span>
-                                        )}
-                                        
                                         {/* Out of Stock Overlay */}
                                         {isOutOfStock && (
                                             <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
@@ -338,6 +165,13 @@ export default function ProductList() {
 
                                     {/* Product Details */}
                                     <div className="p-5">
+                                        {/* Category Badge */}
+                                        {product.category && (
+                                            <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full mb-2">
+                                                {product.category}
+                                            </span>
+                                        )}
+
                                         {/* Product Name */}
                                         <h2 className="text-base font-bold text-gray-900 mb-3 line-clamp-2 min-h-[3rem] leading-tight">
                                             {product.name}
@@ -348,11 +182,6 @@ export default function ProductList() {
                                             <span className="text-2xl font-extrabold text-gray-900">
                                                 ${parseFloat(product.price).toFixed(2)}
                                             </span>
-                                            {product.original_price && product.original_price > product.price && (
-                                                <span className="ml-2 text-sm text-gray-400 line-through">
-                                                    ${parseFloat(product.original_price).toFixed(2)}
-                                                </span>
-                                            )}
                                         </div>
 
                                         {/* Stock Status */}
@@ -400,8 +229,31 @@ export default function ProductList() {
                             );
                         })}
                     </div>
+
+                    {/* Empty State */}
+                    {products.length === 0 && !loading && (
+                        <div className="text-center py-12">
+                            <p className="text-gray-500 text-lg">No products available at the moment.</p>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            <style>{`
+                @keyframes slide-in {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                .animate-slide-in {
+                    animation: slide-in 0.3s ease-out;
+                }
+            `}</style>
         </>
     );
 }
