@@ -6,33 +6,40 @@ import {
   Bars3Icon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useCart } from '@/Contexts/CartContext';
 
-export default function Header() {
+export default function Header({ searchQuery = '', setSearchQuery = () => {} }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  // Get cart count from context
-  const { cartCount } = useCart();
+  // Get authenticated user from Inertia
+  const { auth } = usePage().props;
+  const user = auth?.user;
+
+  // Get cart context
+  const { cartCount, fetchCart } = useCart();
   
   // Navigation links
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Products', href: '/products' },
-    { name: 'Categories', href: '/categories' },
-    { name: 'Deals', href: '/deals' },
-    { name: 'About', href: '/about' },
   ];
 
-  // Handle logout
+  // Handle logout - clear cart then logout
   const handleLogout = () => {
-    router.post(route('logout'));
+    // Clear cart state immediately
+    router.post(route('logout'), {}, {
+      onSuccess: () => {
+        // After successful logout, refresh cart (will be empty for guest)
+        fetchCart();
+      }
+    });
   };
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm backdrop-blur-sm bg-white/95">
+      {/* ... rest of your header code stays the same ... */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
@@ -55,7 +62,7 @@ export default function Header() {
 
             {/* Logo */}
             <Link 
-              href="/" 
+              href="/products" 
               className="ml-2 md:ml-0 flex items-center group"
               aria-label="Go to homepage"
             >
@@ -98,21 +105,20 @@ export default function Header() {
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500 transition-all duration-200"
                   aria-label="Search products"
                 />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
 
           {/* Right: Cart + User */}
           <div className="flex items-center space-x-4 sm:space-x-6">
-            {/* Mobile search button */}
-            <button
-              type="button"
-              className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Open search"
-            >
-              <MagnifyingGlassIcon className="h-6 w-6" />
-            </button>
-
             {/* Cart - NOW DYNAMIC */}
             <Link 
               href="/cart" 
@@ -131,7 +137,7 @@ export default function Header() {
               )}
             </Link>
 
-            {/* User */}
+            {/* User Menu */}
             <div className="relative group">
               <button
                 type="button"
@@ -144,47 +150,45 @@ export default function Header() {
               
               {/* Dropdown menu */}
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-200 border border-gray-200 z-10">
-                <Link
-                  href={route('login')}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href={route('register')}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150"
-                >
-                  Create Account
-                </Link>
-                <hr className="my-2 border-gray-200" />
-                <Link
-                  href="/profile"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150"
-                >
-                  My Profile
-                </Link>
-                <Link
-                  href="/orders"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150"
-                >
-                  My Orders
-                </Link>
-                {/* FIXED LOGOUT BUTTON */}
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150"
-                >
-                  Logout
-                </button>
+                {user ? (
+                  // Authenticated user menu
+                  <>
+                    <div className="px-4 py-2 border-b border-gray-200">
+                      <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    </div>
+                    <hr className="my-2 border-gray-200" />
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  // Guest user menu
+                  <>
+                    <Link
+                      href={route('login')}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href={route('register')}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150"
+                    >
+                      Create Account
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </div>
 
         {/* Mobile search bar */}
-        <div className={`md:hidden pb-4 transition-all duration-300 ${
-          isSearchFocused ? 'opacity-100' : 'opacity-0 invisible'
-        }`}>
+        <div className="md:hidden pb-4 pt-2">
           <div className="relative">
             <MagnifyingGlassIcon 
               className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" 
@@ -193,12 +197,18 @@ export default function Header() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
               placeholder="Search products..."
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
               aria-label="Search products"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            )}
           </div>
         </div>
 

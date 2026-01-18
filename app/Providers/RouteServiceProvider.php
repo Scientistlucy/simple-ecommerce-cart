@@ -7,6 +7,13 @@ use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
+    /**
+     * The path to your application's "home" route.
+     *
+     * @var string
+     */
+    public const HOME = '/products';
+
     public function boot(): void
     {
         $this->routes(function () {

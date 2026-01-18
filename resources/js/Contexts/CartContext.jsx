@@ -27,6 +27,9 @@ export const CartProvider = ({ children }) => {
             }
         } catch (error) {
             console.error('Error fetching cart:', error);
+            // Reset cart on error (user might be logged out)
+            setCartItems([]);
+            setCartCount(0);
         }
     };
 

@@ -33,7 +33,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+       return redirect()->intended('/products');
     }
 
     /**
@@ -46,6 +46,8 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+         // Also clear cart session for guests
+    $request->session()->forget('cart');
 
         return redirect('/');
     }
