@@ -1,59 +1,220 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
-## About Laravel
+# Simple E-Commerce Shopping Cart
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+A simple e-commerce shopping cart application built with Laravel and React (Inertia.js). This project demonstrates clean Laravel architecture, authenticated user-based cart management, background jobs, and scheduled tasks while keeping the implementation intentionally simple and maintainable.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Built for:** Practical Hiring Assessment
+**Tech Stack:** Laravel 11, React (Inertia.js), Tailwind CSS, MySQL
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+##  Project Overview
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+This project implements a basic e-commerce shopping cart system where authenticated users can browse products and manage their personal shopping cart.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+The main objective of the project is to demonstrate real-world Laravel skills, including authentication, database relationships, queue jobs, and task scheduling, following Laravel best practices.
 
-## Laravel Sponsors
+Each shopping cart is **persisted in the database and associated with the authenticated user**, ensuring cart data is preserved across sessions without relying on browser storage or sessions.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+##  Features
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### User Features
 
-## Contributing
+* User authentication (register, login, logout) using Laravel Breeze (React + Inertia.js)
+* Browse available products
+* View product name, price, and stock quantity
+* Add products to cart
+* Update cart item quantities
+* Remove items from cart
+* Persistent cart tied to the authenticated user
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### System Features
 
-## Code of Conduct
+* Database-driven shopping cart (no session or local storage)
+* Automatic stock tracking
+* Background job for low-stock email notifications
+* Scheduled daily sales report email
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+##  Tech Stack
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Backend
 
-## License
+* **Framework:** Laravel 11
+* **Authentication:** Laravel Breeze (Inertia.js + React)
+* **Database:** MySQL
+* **Queue:** Laravel Queue (database driver)
+* **Scheduler:** Laravel Scheduler
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Frontend
+
+* **Framework:** React
+* **Routing & State:** Inertia.js
+* **Styling:** Tailwind CSS
+
+### Tooling
+
+* Git & GitHub for version control
+* Composer & npm for dependency management
+* Vite for frontend asset bundling
+
+---
+
+##  Application Architecture
+
+The application follows Laravel’s recommended MVC structure and keeps responsibilities clearly separated.
+
+**High-level request flow:**
+
+```
+User Action
+   ↓
+React Component (Inertia.js)
+   ↓
+Laravel Controller
+   ↓
+Eloquent Models
+   ↓
+Database
+   ↓
+Jobs / Scheduler (if applicable)
+```
+
+Business logic is handled server-side to keep data consistent and secure.
+
+---
+
+## Database Models & Relationships
+
+### User
+
+* Has many cart items
+
+### Product
+
+* name
+* price
+* stock_quantity
+
+### CartItem
+
+* belongs to a user
+* belongs to a product
+* stores quantity per product per user
+
+Each user can only have **one cart entry per product**, enforced at the database level.
+
+---
+
+##  Background Jobs & Scheduling
+
+### Low Stock Notification
+
+* A Laravel Job is dispatched when a product’s stock falls below a defined threshold
+* The job sends an email notification to a dummy admin email address
+* Queue driver used: `database`
+
+### Daily Sales Report
+
+* A scheduled command runs every evening
+* Collects data for products sold during the day
+* Sends a summary report to the dummy admin email
+* Implemented using Laravel’s task scheduler
+
+---
+
+##  Setup & Installation
+
+### Prerequisites
+
+* PHP 8.2+
+* Composer
+* Node.js & npm
+* MySQL
+
+### Installation Steps
+
+```bash
+git clone https://github.com/YOUR_USERNAME/simple-ecommerce-cart.git
+cd simple-ecommerce-cart
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+```
+
+### Configure Database (`.env`)
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=ecommerce_cart
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### Configure Mail (Development)
+
+```env
+MAIL_MAILER=log
+ADMIN_EMAIL=admin@example.com
+```
+
+### Run Migrations
+
+```bash
+php artisan migrate
+```
+
+### Build Assets & Run Server
+
+```bash
+npm run dev
+php artisan serve
+```
+
+Visit: `http://127.0.0.1:8000`
+
+---
+
+## Running Queues & Scheduler Locally
+
+### Queue Worker
+
+```bash
+php artisan queue:work
+```
+
+### Scheduler
+
+```bash
+php artisan schedule:work
+```
+
+For production, configure a cron job:
+
+```bash
+* * * * * php artisan schedule:run >> /dev/null 2>&1
+```
+
+---
+
+---
+
+##  Author
+
+**Lucy Mwaura**
+GitHub: [https://github.com/Scientistlucy](https://github.com/Scientistlucy)
+
+---
+
+##  License
+
+This project is open-sourced software licensed under the MIT license.
+
+---
